@@ -2,35 +2,43 @@ import streamlit as st
 import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
-import json
 
 # Google Sheets setup
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 # Load credentials from Streamlit Secrets
-credentials_dict = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
-credentials = Credentials.from_service_account_info(credentials_dict)
-
-# Authenticate with Google Sheets
-client = gspread.authorize(credentials)
-sheet = client.open("FBBQ Onyx Storm Progress Tracker").sheet1
+try:
+    credentials_dict = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
+    credentials = Credentials.from_service_account_info(credentials_dict, scopes=SCOPES)
+    client = gspread.authorize(credentials)
+    sheet = client.open("FBBQ Onyx Storm Progress Tracker").sheet1
+    st.write("Google Sheets connection successful!")
+except Exception as e:
+    st.error(f"Error connecting to Google Sheets: {e}")
 
 # Helper functions for Google Sheets
 def load_data():
     """Load data from the Google Sheet, or create an empty DataFrame if the sheet is blank."""
-    records = sheet.get_all_records()
-    if not records:  # If the sheet is empty
+    try:
+        records = sheet.get_all_records()
+        if not records:  # If the sheet is empty
+            return pd.DataFrame(columns=["Name", "Chapter", "Picture"])
+        return pd.DataFrame(records)
+    except Exception as e:
+        st.error(f"Error loading data from Google Sheets: {e}")
         return pd.DataFrame(columns=["Name", "Chapter", "Picture"])
-    return pd.DataFrame(records)
 
 def save_data(dataframe):
     """Save data to the Google Sheet."""
-    if dataframe.empty:
-        sheet.clear()
-        sheet.update([["Name", "Chapter", "Picture"]])  
-    else:
-        sheet.clear()
-        sheet.update([dataframe.columns.values.tolist()] + dataframe.values.tolist())
+    try:
+        if dataframe.empty:
+            sheet.clear()
+            sheet.update([["Name", "Chapter", "Picture"]])  
+        else:
+            sheet.clear()
+            sheet.update([dataframe.columns.values.tolist()] + dataframe.values.tolist())
+    except Exception as e:
+        st.error(f"Error saving data to Google Sheets: {e}")
 
 # Load data into session state
 if "progress_data" not in st.session_state:
@@ -100,3 +108,13 @@ if not st.session_state.progress_data.empty:
             st.progress(row["Chapter"] / 66)  # Replace 66 with the total number of chapters in your book
 else:
     st.write("No progress logged yet. Use the form above to add the first entry!")
+
+try:
+    credentials_dict = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
+    st.write("Secrets loaded successfully!")
+    credentials = Credentials.from_service_account_info(credentials_dict, scopes=SCOPES)
+    client = gspread.authorize(credentials)
+    sheet = client.open("FBBQ Onyx Storm Progress Tracker").sheet1
+    st.write("Google Sheets connection successful!")
+except Exception as e:
+    st.error(f"Error: {e}")
