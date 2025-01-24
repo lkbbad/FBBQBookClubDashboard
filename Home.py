@@ -12,7 +12,7 @@ try:
     credentials = Credentials.from_service_account_info(credentials_dict, scopes=SCOPES)
     client = gspread.authorize(credentials)
     sheet = client.open("FBBQ Onyx Storm Progress Tracker").sheet1
-    st.write("Google Sheets connection successful!")
+    # st.write("Google Sheets connection successful!")
 except Exception as e:
     st.error(f"Error connecting to Google Sheets: {e}")
 
@@ -111,10 +111,10 @@ else:
 
 try:
     credentials_dict = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
-    st.write("Secrets loaded successfully!")
+    # st.write("Secrets loaded successfully!")
     credentials = Credentials.from_service_account_info(credentials_dict, scopes=SCOPES)
     client = gspread.authorize(credentials)
     sheet = client.open("FBBQ Onyx Storm Progress Tracker").sheet1
-    st.write("Google Sheets connection successful!")
+    # st.write("Google Sheets connection successful!")
 except Exception as e:
     st.error(f"Error: {e}")
